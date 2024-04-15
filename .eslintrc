@@ -1,0 +1,35 @@
+{
+	"parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+	"plugins": [
+    "@typescript-eslint", 
+    "import"
+  ],
+	"extends": [
+		"eslint:recommended",
+		"airbnb/base",
+		"plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts"]
+      },
+      "alias": {
+        "map": [
+          ["@command", "./src/command/"],
+          ["@interfaces", "./src/interfaces/"],
+          ["@helper", "./src/helper/"]
+        ],
+        "extensions": [".ts", ".js", ".tsx"]
+      }
+    }
+	},
+	"rules": {
+		"indent": ["error", 4],
+    "import/extensions": [ "error", "ignorePackages", { "ts": "never" } ]
+	}
+}

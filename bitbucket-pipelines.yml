@@ -1,0 +1,47 @@
+#  Template NodeJS build
+#  This template allows you to validate your NodeJS code.
+#  The workflow allows running tests and code linting on the default branch.
+
+image: node:16
+
+clone:
+  depth: full
+
+pipelines:
+  custom:
+    'release':
+        - step:
+            name: Build and Release
+            script:
+                  # Pull latest changes from the master branch
+                  - git fetch origin master
+                  # Installing dependencies
+                  - npm install
+                  # Get version from package.json
+                  - export VERSION=$(node -p "require('./package.json').version")
+                  # Fetch latest remote tags
+                  - git fetch --all --tags
+                  # Check if tag for current version already exists
+                  - export TAG_EXISTS=$(git tag | grep "^$VERSION$" || echo '')
+                  # If tag already exists, patch the version
+                  - if [ "$TAG_EXISTS" != "" ]; then npm --no-git-tag-version version patch && git add package.json && git commit -m "[skip ci] Patched minor version" && git push; export VERSION=$(node -p "require('./package.json').version"); fi
+                  # Build the TypeScript code
+                  - npm run build
+                  # Remove the src folder
+                  - git rm -rf src/
+                  # Add all files to Git index
+                  - git add .
+                  # Commit the new version and tag
+                  - git commit -am "${VERSION}-release" --no-verify
+                  - git tag -a "${VERSION}" -m "Release version ${VERSION}"
+                  # Push the new version and tag to the repository
+                  - git push origin "${VERSION}"
+  pull-requests:
+    '**':
+        - step:
+            name: Deps check and unit test
+            caches:
+              - node
+            script:
+              - npm install
+              # - npm run test-coverage
